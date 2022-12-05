@@ -1,0 +1,13 @@
+{
+	"configurations": [
+		{
+			"name": "Run",
+			"type": "python",
+			"request": "launch",
+			"program": "dexonline/main.py",
+			"console": "integratedTerminal",
+			"justMyCode": true,
+			"env": { "PYTHONPATH": ".;dexonline" }
+		}
+	]
+}
