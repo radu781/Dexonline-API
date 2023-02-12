@@ -1,8 +1,7 @@
 import requests
 from bs4 import BeautifulSoup, element
 
-from dexonline.utils import BASE_LINK, SearchResult, Item
-
+from utils import BASE_LINK, SearchResult, Item
 from dataclasses import dataclass
 
 
@@ -28,9 +27,9 @@ class Searcher:
             result = SearchResult()
             result.word = self.__get_word(word)
             result.plural = self.__get_plural_form(word)
+            result.etymology = self.__get_etymology(def_)
             result.type = self.__get_type(word)
             result.definitions = self.__get_meanings(def_)
-            # result.etymology[ety] = etymologies[ety]
             out.append(result)
 
         return out
@@ -85,7 +84,7 @@ class Searcher:
 
         for et in soup.find_all("li", attrs={"class": "type-etymology"}):
             language_span = et.find("span", attrs={"class": "tag"}).text
-            if not "limba in" in language_span:
+            if not "limba" in language_span:
                 continue
             language = language_span.replace("limba ", "")
             word = et.find("span", attrs={"class": "def html"}).text.strip()

@@ -9,10 +9,7 @@ setup(
     author_email="poparadu501@gmail.com",
     license="MIT",
     packages=["dexonline"],
-    install_requires=[
-        "mpi4py>=2.0",
-        "numpy",
-    ],
+    install_requires=["beautifulsoup4==4.11.1"],
     classifiers=[
         "Programming Language :: Python :: 3.11",
     ],
