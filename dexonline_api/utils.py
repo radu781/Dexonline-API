@@ -18,3 +18,7 @@ class SearchResult:
     type: str = field(default="")
     definitions: list[Item] = field(default_factory=list)
     etymology: dict[str, str] = field(default_factory=dict)
+
+
+class DexOnlineException(Exception):
+    ...

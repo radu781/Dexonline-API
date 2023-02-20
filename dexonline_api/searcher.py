@@ -1,25 +1,27 @@
-import requests
-from bs4 import BeautifulSoup, element
+from dataclasses import dataclass, field
 
-from utils import BASE_LINK, SearchResult, Item
-from dataclasses import dataclass
+import requests
+from bs4 import BeautifulSoup, NavigableString, element
+from utils import BASE_LINK, DexOnlineException, Item, SearchResult
 
 
 @dataclass
 class Searcher:
     word: str
+    response: requests.Response | None = field(init=False, default=None)
 
     def exists(self) -> bool:
-        response = requests.get(BASE_LINK + self.word)
-        return response.ok
+        if self.response is None:
+            self.response = requests.get(BASE_LINK + self.word)
+        return self.response.ok
 
     def search(self) -> list[SearchResult]:
-        response = requests.get(BASE_LINK + self.word)
-        soup = BeautifulSoup(response.content, "html.parser")
+        if self.response is None:
+            self.response = requests.get(BASE_LINK + self.word)
+        soup = BeautifulSoup(self.response.content, "html.parser")
 
         words = soup.find_all("h3", attrs={"class": "tree-heading"})
         definitions = soup.find_all("div", attrs={"class": "tree-body"})
-        etymologies = self.__get_etymology(soup)
 
         out: list[SearchResult] = []
 
@@ -39,13 +41,18 @@ class Searcher:
         return heading.text.split(",")[0].strip()
 
     def __get_plural_form(self, word: element.Tag) -> str:
-        plural = ""
-        for letter in word.find("span", attrs={"tree-inflected-form"}).strings:
-            plural += letter
+        plural_line = word.find("span", attrs={"tree-inflected-form"})
+        if plural_line is None:
+            raise DexOnlineException("Plural form not found")
+
+        plural = "".join([letter for letter in plural_line.strings])
         return plural.lstrip(" ,")
 
     def __get_type(self, word: element.Tag) -> str:
-        return word.find("span", attrs={"tree-pos-info"}).text
+        type_line = word.find("span", attrs={"tree-pos-info"})
+        if type_line is None:
+            raise DexOnlineException("Type not found")
+        return type_line.text
 
     def __get_meanings(self, def_: element.Tag) -> list[Item]:
         out: list[Item] = []
@@ -73,7 +80,10 @@ class Searcher:
     def __get_synonyms(self, def_: element.Tag) -> list[str]:
         out: list[str] = []
 
-        synonyms = def_.find("div", attrs={"class": "meaning-relations"}).find_all("a")
+        meanings = def_.find("div", attrs={"class": "meaning-relations"})
+        if isinstance(meanings, NavigableString) or meanings is None:
+            raise DexOnlineException("Could not find synonyms", meanings)
+        synonyms = meanings.find_all("a")
         for synonym in synonyms:
             out.append(synonym.text.strip())
 

@@ -1,13 +1,18 @@
 {
 	"configurations": [
 		{
-			"name": "Run",
+			"name": "Run tests",
 			"type": "python",
 			"request": "launch",
-			"program": "dexonline/main.py",
 			"console": "integratedTerminal",
-			"justMyCode": true,
-			"env": { "PYTHONPATH": ".;dexonline" }
+			"cwd": "${workspaceFolder}",
+			"module": "pytest",
+			"args": [
+				"dexonline/tests/"
+			],
+			"env": {
+				"PYTHONPATH": "dexonline"
+			}
 		}
 	]
 }
